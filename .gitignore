@@ -1,0 +1,24 @@
+# exclude everything except directory foo/bar
+# /*
+# !/foo
+# /foo/*
+# !/foo/bar
+
+/*
+
+*/bin
+__history/
+__recovery/
+
+!/CadastroCliente
+!.gitignore
+
+*.dproj.*
+*.*res
+*.identcache
+*.*cfg
+*.stat
+*.rc
+*.dcu
+
+
