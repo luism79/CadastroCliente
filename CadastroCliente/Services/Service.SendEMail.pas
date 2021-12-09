@@ -1,14 +1,16 @@
-unit SendEMail;
+unit Service.SendEMail;
 
 interface
 
 uses
   System.Classes, System.SysUtils, Vcl.Forms, CustomBase, IdSMTP, IdMessage,
-  IdExplicitTLSClientServerBase, IdSSLOpenSSL, IdAttachmentFile;
+  IdExplicitTLSClientServerBase, IdSSLOpenSSL, IdAttachmentFile,
+  Controller.EmailSettings;
 
 type
   TrSendEmail = class(TrCustomBase)
   private
+    FSettings: TrSettingsEmail;
     FIdSMTP: TIdSMTP;
     FMessage: TIdMessage;
     FAuthSSL: TIdSSLIOHandlerSocketOpenSSL;
@@ -31,15 +33,13 @@ type
     function GetEmailAddress: string;
     procedure SetEmailAddress(const Value: string);
   public
-    constructor Create(AOwner: TObject); override;
+    constructor Create(AOwner: TObject;
+      ASettings: TrSettingsEmail); reintroduce;
     destructor Destroy; override;
 
     procedure Execute;
 
-    property Host: string read GetHost write SetHost;
-    property Port: Word read GetPort write SetPort;
-    property UserName: string read GetUserName write SetUserName;
-    property PassWord: string read GetPassWord write SetPassWord;
+    property Setings: TrSettingsEmail read FSettings;
     property Subject: string read GetSubject write SetSubject;
     property FromAddress: string read GetFromAddress write SetFromAddress;
     property EmailAddress: string read GetEmailAddress write SetEmailAddress;
@@ -51,9 +51,11 @@ implementation
 
 { TrSendEmail }
 
-constructor TrSendEmail.Create(AOwner: TObject);
+constructor TrSendEmail.Create(AOwner: TObject;
+  ASettings: TrSettingsEmail);
 begin
   inherited Create(AOwner);
+  FSettings := ASettings;
   
   FAuthSSL := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
   FAuthSSL.SSLOptions.Method := sslvTLSv1;

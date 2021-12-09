@@ -8,7 +8,10 @@ uses
   CustomCliente in 'Models\CustomCliente.pas',
   CustomEndereco in 'Models\CustomEndereco.pas',
   ExportXML in 'Services\ExportXML.pas',
-  SendEMail in 'Services\SendEMail.pas';
+  Service.SendEMail in 'Services\Service.SendEMail.pas',
+  Win.Settings in 'Window\Settings\Win.Settings.pas' {frmSettings},
+  Controller.EmailSettings in 'Controller\Controller.EmailSettings.pas',
+  Win.SendEmail in 'Window\Win.SendEmail.pas' {frmSendEmail};
 
 {$R *.res}
 

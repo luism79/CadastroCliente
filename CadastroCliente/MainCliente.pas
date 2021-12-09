@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  CustomCliente, Vcl.Buttons, Vcl.StdCtrls, Vcl.Mask, Vcl.ExtCtrls;
+  CustomCliente, Vcl.Buttons, Vcl.StdCtrls, Vcl.Mask, Vcl.ExtCtrls,
+  Controller.EmailSettings, System.ImageList, Vcl.ImgList;
 
 type
   TForm1 = class(TForm)
@@ -38,8 +39,12 @@ type
     edtPais: TEdit;
     edtCidade: TEdit;
     lblCidade: TLabel;
-    Panel1: TPanel;
+    pnlMain: TPanel;
     btnSendEmail: TButton;
+    btnConfig: TSpeedButton;
+    pnlFooter: TPanel;
+    ButtonedEdit1: TButtonedEdit;
+    ImageList1: TImageList;
 
     //*************************************************************************
     procedure edtOnlyNumberKeyPress(Sender: TObject; var Key: Char);
@@ -49,8 +54,10 @@ type
     procedure btnConsultarCEPClick(Sender: TObject);
     procedure edtCEPKeyPress(Sender: TObject; var Key: Char);
     procedure btnSendEmailClick(Sender: TObject);
+    procedure btnConfigClick(Sender: TObject);
   private
     { Private declarations }
+    FSettingsEmail: TrSettingsEmail;
     FCliente: TrCustomCliente;
     FFileXML: string;
 
@@ -71,7 +78,7 @@ var
 implementation
 
 uses
-  ConsultarCep, ExportXML, SendEMail;
+  ConsultarCep, ExportXML, Win.SendEMail, Win.Settings;
 
 {$R *.dfm}
 
@@ -91,6 +98,18 @@ begin
   FCliente.Endereco.Cidade      := edtCidade.Text;
   FCliente.Endereco.Estado      := cbbEstado.Text;
   FCliente.Endereco.Pais        := edtPais.Text;
+end;
+
+procedure TForm1.btnConfigClick(Sender: TObject);
+var
+  fSettings: TfrmSettings;
+begin
+  fSettings := TfrmSettings.Create(Self, FSettingsEmail);
+  try
+    fSettings.ShowModal;
+  finally
+    fSettings.Free;
+  end;
 end;
 
 procedure TForm1.btnConsultarCEPClick(Sender: TObject);
@@ -165,11 +184,13 @@ end;
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   FreeAndNil(FCliente);
+  FreeAndNil( FSettingsEmail);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  FCliente := TrCustomCliente.Create(Self);
+  FCliente       := TrCustomCliente.Create(Self);
+  FSettingsEmail := TrSettingsEmail.Create;
   LoadCliente;
 end;
 
@@ -223,33 +244,7 @@ procedure TForm1.SendEmail;
     Result.Add(Format('        Páis: %s', [FCliente.Endereco.Pais]));
   end;
 
-var
-  email: TrSendEmail;
 begin
-  email := TrSendEmail.Create(Self);
-  try
-    try
-      email.Host         := 'smtp';
-      email.Port         := 587;
-      email.PassWord     := '';
-      email.UserName     := '';
-      email.FromAddress  := '';
-      email.Subject      := 'Cadastro Cliente';
-      email.EmailAddress := '';
-      email.Text         := ClienteText;
-      email.Attachment   := FFileXML;
-      email.Execute;
-
-      Application.MessageBox('E-mail enviado com sucesso!',
-        'Aviso', MB_ICONEXCLAMATION);
-    except
-      on E: Exception do
-        Application.MessageBox(PWChar(E.Message),
-          'Falha ao enviar o e-mail', MB_ICONEXCLAMATION);
-    end;
-  finally
-    email.Free;
-  end;
 end;
 
 procedure TForm1.SettingsCEP(ASender: TObject);
