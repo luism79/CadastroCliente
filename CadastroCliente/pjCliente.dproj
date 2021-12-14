@@ -105,12 +105,21 @@
             <Form>Form1</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="Services\ConsultarCep.pas"/>
-        <DCCReference Include="Models\CustomBase.pas"/>
-        <DCCReference Include="Models\CustomCliente.pas"/>
-        <DCCReference Include="Models\CustomEndereco.pas"/>
-        <DCCReference Include="Services\ExportXML.pas"/>
-        <DCCReference Include="Services\SendEMail.pas"/>
+        <DCCReference Include="Services\Service.LocateCep.pas"/>
+        <DCCReference Include="Models\Model.CustomBase.pas"/>
+        <DCCReference Include="Models\Model.CustomCliente.pas"/>
+        <DCCReference Include="Models\Model.CustomEndereco.pas"/>
+        <DCCReference Include="Services\Service.ExportXML.pas"/>
+        <DCCReference Include="Services\Service.SendEMail.pas"/>
+        <DCCReference Include="Window\Settings\Win.Settings.pas">
+            <Form>frmSettings</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Models\Model.EmailSettings.pas"/>
+        <DCCReference Include="Window\Win.SendEmail.pas">
+            <Form>frmSendEmail</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

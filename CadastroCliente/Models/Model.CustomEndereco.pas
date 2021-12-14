@@ -1,9 +1,9 @@
-unit CustomEndereco;
+unit Model.CustomEndereco;
 
 interface
 
 uses
-  System.Classes, System.SysUtils, CustomBase;
+  System.Classes, System.SysUtils, Model.CustomBase;
 
 type
   TrCustomEndereco = class(TrCustomBase)

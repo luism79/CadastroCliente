@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  CustomCliente, Vcl.Buttons, Vcl.StdCtrls, Vcl.Mask, Vcl.ExtCtrls;
+  Model.CustomCliente, Vcl.Buttons, Vcl.StdCtrls, Vcl.Mask, Vcl.ExtCtrls,
+  Model.EmailSettings, System.ImageList, Vcl.ImgList;
 
 type
   TForm1 = class(TForm)
@@ -38,8 +39,11 @@ type
     edtPais: TEdit;
     edtCidade: TEdit;
     lblCidade: TLabel;
-    Panel1: TPanel;
+    pnlMain: TPanel;
     btnSendEmail: TButton;
+    btnConfig: TSpeedButton;
+    pnlFooter: TPanel;
+    ImageList1: TImageList;
 
     //*************************************************************************
     procedure edtOnlyNumberKeyPress(Sender: TObject; var Key: Char);
@@ -49,16 +53,23 @@ type
     procedure btnConsultarCEPClick(Sender: TObject);
     procedure edtCEPKeyPress(Sender: TObject; var Key: Char);
     procedure btnSendEmailClick(Sender: TObject);
+    procedure btnConfigClick(Sender: TObject);
+    procedure edtCEPExit(Sender: TObject);
   private
     { Private declarations }
+    FSettingsEmail: TrSettingsEmail;
     FCliente: TrCustomCliente;
     FFileXML: string;
 
     procedure _focusCltr(ACtrl: TWinControl);
     procedure ApplyCliente;
+    procedure CloseFormSetting(ASender: TObject);
     procedure CreateXML;
+    function GetFileName: string;
     procedure LoadCliente;
     procedure LoadEndereco;
+    procedure LoadSettings;
+    procedure SaveSettings;
     procedure SettingsCEP(ASender: TObject);
     procedure SendEmail;
   public
@@ -71,7 +82,13 @@ var
 implementation
 
 uses
-  ConsultarCep, ExportXML, SendEMail;
+  Service.LocateCep, Service.ExportXML, Win.SendEMail, Win.Settings,
+  System.IniFiles;
+
+const
+  CS_GENERAL = 'General';
+  CS_HOST = 'Host';
+  CS_PORT = 'Port';
 
 {$R *.dfm}
 
@@ -91,6 +108,19 @@ begin
   FCliente.Endereco.Cidade      := edtCidade.Text;
   FCliente.Endereco.Estado      := cbbEstado.Text;
   FCliente.Endereco.Pais        := edtPais.Text;
+end;
+
+procedure TForm1.btnConfigClick(Sender: TObject);
+var
+  fSettings: TfrmSettings;
+begin
+  fSettings := TfrmSettings.Create(Self, FSettingsEmail);
+  try
+    fSettings.OnCloseForm := CloseFormSetting;
+    fSettings.ShowModal;
+  finally
+    fSettings.Free;
+  end;
 end;
 
 procedure TForm1.btnConsultarCEPClick(Sender: TObject);
@@ -120,6 +150,11 @@ begin
   SendEmail;
 end;
 
+procedure TForm1.CloseFormSetting(ASender: TObject);
+begin
+  SaveSettings;
+end;
+
 procedure TForm1.CreateXML;
 
   function FileNameXML: string;
@@ -146,6 +181,12 @@ begin
   end;
 end;
 
+procedure TForm1.edtCEPExit(Sender: TObject);
+begin
+  if edtCEP.Text <> EmptyStr then
+    btnConsultarCEPClick(Sender);
+end;
+
 procedure TForm1.edtCEPKeyPress(Sender: TObject; var Key: Char);
 begin
   if Key = #13 then
@@ -165,12 +206,26 @@ end;
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   FreeAndNil(FCliente);
+  FreeAndNil(FSettingsEmail);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  FCliente := TrCustomCliente.Create(Self);
+  FCliente       := TrCustomCliente.Create(Self);
+  FSettingsEmail := TrSettingsEmail.Create;
   LoadCliente;
+  LoadSettings;
+end;
+
+function TForm1.GetFileName: string;
+var
+  lPath: string;
+  lFile: string;
+begin
+  lFile  := ExtractFileName(Application.ExeName);
+  lPath  := ExtractFileDir(Application.ExeName);
+  lFile  := StringReplace(lFile, '.exe', '.ini', [rfReplaceAll, rfIgnoreCase]);
+  Result := Format('%s\%s', [lPath, lFile]);
 end;
 
 procedure TForm1.LoadCliente;
@@ -200,6 +255,32 @@ begin
   edtPais.Text        := FCliente.Endereco.Pais;
 end;
 
+procedure TForm1.LoadSettings;
+var
+  lFileIni: TIniFile;
+begin
+  lFileIni := TIniFile.Create(GetFileName);
+  try
+    FSettingsEmail.Host := lFileIni.ReadString(CS_GENERAL, CS_HOST, '');
+    FSettingsEmail.Port := lFileIni.ReadInteger(CS_GENERAL, CS_PORT, 0);
+  finally
+    lFileIni.Free;
+  end;
+end;
+
+procedure TForm1.SaveSettings;
+var
+  lFileIni: TIniFile;
+begin
+  lFileIni := TIniFile.Create(GetFileName);
+  try
+    lFileIni.WriteString(CS_GENERAL, CS_HOST, FSettingsEmail.Host);
+    lFileIni.WriteInteger(CS_GENERAL, CS_PORT, FSettingsEmail.Port);
+  finally
+    lFileIni.Free;
+  end;
+end;
+
 procedure TForm1.SendEmail;
 
   function ClienteText: TStrings;
@@ -208,7 +289,7 @@ procedure TForm1.SendEmail;
     Result.Add('Dados do Cadastro');
     Result.Add(Format('    Nome: %s', [FCliente.Nome]));
     Result.Add(Format('    Identidade: %s', [FCliente.Identidade]));
-    Result.Add(Format('    CEP: %s', [FCliente.CPF]));
+    Result.Add(Format('    CPF: %s', [FCliente.CPF]));
     Result.Add(Format('    Telefone: %s', [FCliente.Telefone]));
     Result.Add(Format('    E-mail: %s', [FCliente.Email]));
     Result.Add('');
@@ -224,31 +305,15 @@ procedure TForm1.SendEmail;
   end;
 
 var
-  email: TrSendEmail;
+  lSend: TfrmSendEmail;
 begin
-  email := TrSendEmail.Create(Self);
+  lSend := TfrmSendEmail.Create(Self, FSettingsEmail);
   try
-    try
-      email.Host         := 'smtp';
-      email.Port         := 587;
-      email.PassWord     := '';
-      email.UserName     := '';
-      email.FromAddress  := '';
-      email.Subject      := 'Cadastro Cliente';
-      email.EmailAddress := '';
-      email.Text         := ClienteText;
-      email.Attachment   := FFileXML;
-      email.Execute;
-
-      Application.MessageBox('E-mail enviado com sucesso!',
-        'Aviso', MB_ICONEXCLAMATION);
-    except
-      on E: Exception do
-        Application.MessageBox(PWChar(E.Message),
-          'Falha ao enviar o e-mail', MB_ICONEXCLAMATION);
-    end;
+    lSend.Text    := ClienteText;
+    lSend.FileXML := FFileXML;
+    lSend.ShowModal;
   finally
-    email.Free;
+    lSend.Free;
   end;
 end;
 
