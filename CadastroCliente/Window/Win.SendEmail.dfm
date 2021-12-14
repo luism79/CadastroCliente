@@ -12,6 +12,7 @@ object frmSendEmail: TfrmSendEmail
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poOwnerFormCenter
   PixelsPerInch = 96
   TextHeight = 13
   object pnlMain: TPanel
@@ -52,13 +53,6 @@ object frmSendEmail: TfrmSendEmail
       Height = 13
       Caption = 'Assunto'
     end
-    object lblAttach: TLabel
-      Left = 18
-      Top = 108
-      Width = 35
-      Height = 13
-      Caption = 'Anexar'
-    end
     object edtFrom: TEdit
       Left = 55
       Top = 17
@@ -97,9 +91,9 @@ object frmSendEmail: TfrmSendEmail
     end
     object edtText: TRichEdit
       Left = 55
-      Top = 150
+      Top = 104
       Width = 396
-      Height = 70
+      Height = 117
       BevelInner = bvNone
       BevelOuter = bvRaised
       Ctl3D = True
@@ -116,15 +110,6 @@ object frmSendEmail: TfrmSendEmail
       TabOrder = 3
       Zoom = 100
     end
-    object ButtonedEdit1: TButtonedEdit
-      Left = 168
-      Top = 102
-      Width = 121
-      Height = 19
-      RightButton.Visible = True
-      TabOrder = 4
-      Text = 'ButtonedEdit1'
-    end
   end
   object pnlFooter: TPanel
     Left = 0
@@ -137,7 +122,7 @@ object frmSendEmail: TfrmSendEmail
     ShowCaption = False
     TabOrder = 1
     object btnSend: TBitBtn
-      Left = 297
+      Left = 295
       Top = 10
       Width = 75
       Height = 25
@@ -152,6 +137,7 @@ object frmSendEmail: TfrmSendEmail
       Height = 25
       Cancel = True
       Caption = 'Descartar'
+      ModalResult = 2
       TabOrder = 1
     end
   end

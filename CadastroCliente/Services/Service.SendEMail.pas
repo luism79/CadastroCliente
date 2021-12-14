@@ -3,9 +3,9 @@ unit Service.SendEMail;
 interface
 
 uses
-  System.Classes, System.SysUtils, Vcl.Forms, CustomBase, IdSMTP, IdMessage,
+  System.Classes, System.SysUtils, Vcl.Forms, Model.CustomBase, IdSMTP, IdMessage,
   IdExplicitTLSClientServerBase, IdSSLOpenSSL, IdAttachmentFile,
-  Controller.EmailSettings;
+  Model.EmailSettings;
 
 type
   TrSendEmail = class(TrCustomBase)
@@ -16,22 +16,13 @@ type
     FAuthSSL: TIdSSLIOHandlerSocketOpenSSL;
     FAttachment: string;
 
-    function GetHost: string;
-    procedure SetHost(const Value: string);
-    function GetPort: Word;
-    procedure SetPort(const Value: Word);
-    function GetUserName: string;
-    procedure SetUserName(const Value: string);
-    function GetPassWord: string;
-    procedure SetPassWord(const Value: string);
     function GetSubject: string;
     procedure SetSubject(const Value: string);
-    function GetFromAddress: string;
-    procedure SetFromAddress(const Value: string);
     function GetText: TStrings;
     procedure SetText(const Value: TStrings);
     function GetEmailAddress: string;
     procedure SetEmailAddress(const Value: string);
+    procedure SetSettings(ASettings: TrSettingsEmail);
   public
     constructor Create(AOwner: TObject;
       ASettings: TrSettingsEmail); reintroduce;
@@ -41,7 +32,6 @@ type
 
     property Setings: TrSettingsEmail read FSettings;
     property Subject: string read GetSubject write SetSubject;
-    property FromAddress: string read GetFromAddress write SetFromAddress;
     property EmailAddress: string read GetEmailAddress write SetEmailAddress;
     property Text: TStrings read GetText write SetText;
     property Attachment: string read FAttachment write FAttachment;
@@ -55,7 +45,6 @@ constructor TrSendEmail.Create(AOwner: TObject;
   ASettings: TrSettingsEmail);
 begin
   inherited Create(AOwner);
-  FSettings := ASettings;
   
   FAuthSSL := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
   FAuthSSL.SSLOptions.Method := sslvTLSv1;
@@ -67,6 +56,8 @@ begin
   FIdSMTP.AuthType  := satDefault;
 
   FMessage := TIdMessage.Create(nil);
+
+  SetSettings(ASettings);
 end;
 
 destructor TrSendEmail.Destroy;
@@ -101,26 +92,6 @@ begin
   Result := FMessage.Recipients.EMailAddresses;
 end;
 
-function TrSendEmail.GetFromAddress: string;
-begin
-  Result := FMessage.From.Address;
-end;
-
-function TrSendEmail.GetHost: string;
-begin
-  Result := FIdSMTP.Host;
-end;
-
-function TrSendEmail.GetPassWord: string;
-begin
-  Result := FIdSMTP.Password;
-end;
-
-function TrSendEmail.GetPort: Word;
-begin
-  Result := FIdSMTP.Port;
-end;
-
 function TrSendEmail.GetSubject: string;
 begin
   Result := FMessage.Subject;
@@ -131,34 +102,21 @@ begin
   Result := FMessage.Body;
 end;
 
-function TrSendEmail.GetUserName: string;
-begin
-  Result := FIdSMTP.Username;
-end;
-
 procedure TrSendEmail.SetEmailAddress(const Value: string);
 begin
   FMessage.Recipients.EMailAddresses := Value;
 end;
 
-procedure TrSendEmail.SetFromAddress(const Value: string);
+procedure TrSendEmail.SetSettings(ASettings: TrSettingsEmail);
 begin
-  FMessage.From.Address := Value;
-end;
+  FSettings        := ASettings;
+  FIdSMTP.Host     := FSettings.Host;
+  FIdSMTP.Port     := FSettings.Port;
+  FIdSMTP.Username := FSettings.UserName;
+  FIdSMTP.Password := FSettings.Password;
 
-procedure TrSendEmail.SetHost(const Value: string);
-begin
-  FIdSMTP.Host := Value;
-end;
-
-procedure TrSendEmail.SetPassWord(const Value: string);
-begin
-  FIdSMTP.Password := Value;
-end;
-
-procedure TrSendEmail.SetPort(const Value: Word);
-begin
-  FIdSMTP.Port := Value;
+  FMessage.From.Address := FSettings.UserName;
+  FMessage.From.Name    := FSettings.UserName;
 end;
 
 procedure TrSendEmail.SetSubject(const Value: string);
@@ -170,11 +128,6 @@ procedure TrSendEmail.SetText(const Value: TStrings);
 begin
   FMessage.Body.Clear;
   FMessage.Body.AddStrings(Value);
-end;
-
-procedure TrSendEmail.SetUserName(const Value: string);
-begin
-  FIdSMTP.Username := Value;
 end;
 
 end.

@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls,
-  Vcl.Samples.Spin, Controller.EmailSettings;
+  Vcl.Samples.Spin, Model.EmailSettings;
 
 type
   TfrmSettings = class(TForm)
@@ -18,6 +18,7 @@ type
   private
     { Private declarations }
     FSettings: TrSettingsEmail;
+    FOnCloseForm: TNotifyEvent;
 
     procedure LoadSettings;
     procedure SaveSettings;
@@ -25,6 +26,8 @@ type
     { Public declarations }
     constructor Create(AOwner: TComponent;
      ASettings: TrSettingsEmail); reintroduce;
+
+    property OnCloseForm: TNotifyEvent read FOnCloseForm write FOnCloseForm;
   end;
 
 var
@@ -46,6 +49,8 @@ end;
 procedure TfrmSettings.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   SaveSettings;
+  if Assigned(FOnCloseForm) then
+    FOnCloseForm(Self);
   Action := caFree;
 end;
 

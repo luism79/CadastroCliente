@@ -1,10 +1,10 @@
-unit ExportXML;
+unit Service.ExportXML;
 
 interface
 
 uses
   System.Classes, System.SysUtils, Vcl.Forms, System.Rtti,
-  System.IOUtils, CustomBase;
+  System.IOUtils, Model.CustomBase;
 
 type
   TrExportXML = class(TrCustomBase)

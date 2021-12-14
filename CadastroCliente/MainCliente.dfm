@@ -110,10 +110,10 @@ object Form1: TForm1
       object edtCPF: TMaskEdit
         Left = 255
         Top = 56
-        Width = 91
+        Width = 89
         Height = 19
-        EditMask = '000.00.000-00;0;_'
-        MaxLength = 13
+        EditMask = '000.000.000-00;0;_'
+        MaxLength = 14
         TabOrder = 2
         Text = ''
       end
@@ -206,6 +206,7 @@ object Form1: TForm1
           MaxLength = 8
           TabOrder = 0
           Text = '01001000'
+          OnExit = edtCEPExit
           OnKeyPress = edtCEPKeyPress
         end
         object edtLogradouro: TEdit
@@ -293,20 +294,6 @@ object Form1: TForm1
           TabOrder = 6
           Text = 'edtCidade'
         end
-        object ButtonedEdit1: TButtonedEdit
-          Left = 299
-          Top = 20
-          Width = 121
-          Height = 19
-          Images = ImageList1
-          RightButton.DisabledImageIndex = 0
-          RightButton.HotImageIndex = 0
-          RightButton.ImageIndex = 0
-          RightButton.PressedImageIndex = 0
-          RightButton.Visible = True
-          TabOrder = 8
-          Text = 'ButtonedEdit1'
-        end
       end
     end
   end
@@ -379,7 +366,7 @@ object Form1: TForm1
     Left = 213
     Top = 318
     Bitmap = {
-      494C010101000800040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010101000800040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       000000000000000000000000000000000000000000FF000000FF000000FF0000
       00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000
@@ -515,6 +502,7 @@ object Form1: TForm1
       F81F000000000000F81F000000000000F19F000000000000F19F000000000000
       F19F000000000000F19F000000000000F19F000000000000F19F000000000000
       F19F000000000000F19F000000000000F9DF000000000000FC9F000000000000
-      FC3F000000000000FFFF000000000000}
+      FC3F000000000000FFFF00000000000000000000000000000000000000000000
+      000000000000}
   end
 end

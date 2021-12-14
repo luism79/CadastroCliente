@@ -5,8 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  CustomCliente, Vcl.Buttons, Vcl.StdCtrls, Vcl.Mask, Vcl.ExtCtrls,
-  Controller.EmailSettings, System.ImageList, Vcl.ImgList;
+  Model.CustomCliente, Vcl.Buttons, Vcl.StdCtrls, Vcl.Mask, Vcl.ExtCtrls,
+  Model.EmailSettings, System.ImageList, Vcl.ImgList;
 
 type
   TForm1 = class(TForm)
@@ -43,7 +43,6 @@ type
     btnSendEmail: TButton;
     btnConfig: TSpeedButton;
     pnlFooter: TPanel;
-    ButtonedEdit1: TButtonedEdit;
     ImageList1: TImageList;
 
     //*************************************************************************
@@ -55,6 +54,7 @@ type
     procedure edtCEPKeyPress(Sender: TObject; var Key: Char);
     procedure btnSendEmailClick(Sender: TObject);
     procedure btnConfigClick(Sender: TObject);
+    procedure edtCEPExit(Sender: TObject);
   private
     { Private declarations }
     FSettingsEmail: TrSettingsEmail;
@@ -63,9 +63,13 @@ type
 
     procedure _focusCltr(ACtrl: TWinControl);
     procedure ApplyCliente;
+    procedure CloseFormSetting(ASender: TObject);
     procedure CreateXML;
+    function GetFileName: string;
     procedure LoadCliente;
     procedure LoadEndereco;
+    procedure LoadSettings;
+    procedure SaveSettings;
     procedure SettingsCEP(ASender: TObject);
     procedure SendEmail;
   public
@@ -78,7 +82,13 @@ var
 implementation
 
 uses
-  ConsultarCep, ExportXML, Win.SendEMail, Win.Settings;
+  Service.LocateCep, Service.ExportXML, Win.SendEMail, Win.Settings,
+  System.IniFiles;
+
+const
+  CS_GENERAL = 'General';
+  CS_HOST = 'Host';
+  CS_PORT = 'Port';
 
 {$R *.dfm}
 
@@ -106,6 +116,7 @@ var
 begin
   fSettings := TfrmSettings.Create(Self, FSettingsEmail);
   try
+    fSettings.OnCloseForm := CloseFormSetting;
     fSettings.ShowModal;
   finally
     fSettings.Free;
@@ -139,6 +150,11 @@ begin
   SendEmail;
 end;
 
+procedure TForm1.CloseFormSetting(ASender: TObject);
+begin
+  SaveSettings;
+end;
+
 procedure TForm1.CreateXML;
 
   function FileNameXML: string;
@@ -165,6 +181,12 @@ begin
   end;
 end;
 
+procedure TForm1.edtCEPExit(Sender: TObject);
+begin
+  if edtCEP.Text <> EmptyStr then
+    btnConsultarCEPClick(Sender);
+end;
+
 procedure TForm1.edtCEPKeyPress(Sender: TObject; var Key: Char);
 begin
   if Key = #13 then
@@ -184,7 +206,7 @@ end;
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   FreeAndNil(FCliente);
-  FreeAndNil( FSettingsEmail);
+  FreeAndNil(FSettingsEmail);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -192,6 +214,18 @@ begin
   FCliente       := TrCustomCliente.Create(Self);
   FSettingsEmail := TrSettingsEmail.Create;
   LoadCliente;
+  LoadSettings;
+end;
+
+function TForm1.GetFileName: string;
+var
+  lPath: string;
+  lFile: string;
+begin
+  lFile  := ExtractFileName(Application.ExeName);
+  lPath  := ExtractFileDir(Application.ExeName);
+  lFile  := StringReplace(lFile, '.exe', '.ini', [rfReplaceAll, rfIgnoreCase]);
+  Result := Format('%s\%s', [lPath, lFile]);
 end;
 
 procedure TForm1.LoadCliente;
@@ -221,6 +255,32 @@ begin
   edtPais.Text        := FCliente.Endereco.Pais;
 end;
 
+procedure TForm1.LoadSettings;
+var
+  lFileIni: TIniFile;
+begin
+  lFileIni := TIniFile.Create(GetFileName);
+  try
+    FSettingsEmail.Host := lFileIni.ReadString(CS_GENERAL, CS_HOST, '');
+    FSettingsEmail.Port := lFileIni.ReadInteger(CS_GENERAL, CS_PORT, 0);
+  finally
+    lFileIni.Free;
+  end;
+end;
+
+procedure TForm1.SaveSettings;
+var
+  lFileIni: TIniFile;
+begin
+  lFileIni := TIniFile.Create(GetFileName);
+  try
+    lFileIni.WriteString(CS_GENERAL, CS_HOST, FSettingsEmail.Host);
+    lFileIni.WriteInteger(CS_GENERAL, CS_PORT, FSettingsEmail.Port);
+  finally
+    lFileIni.Free;
+  end;
+end;
+
 procedure TForm1.SendEmail;
 
   function ClienteText: TStrings;
@@ -229,7 +289,7 @@ procedure TForm1.SendEmail;
     Result.Add('Dados do Cadastro');
     Result.Add(Format('    Nome: %s', [FCliente.Nome]));
     Result.Add(Format('    Identidade: %s', [FCliente.Identidade]));
-    Result.Add(Format('    CEP: %s', [FCliente.CPF]));
+    Result.Add(Format('    CPF: %s', [FCliente.CPF]));
     Result.Add(Format('    Telefone: %s', [FCliente.Telefone]));
     Result.Add(Format('    E-mail: %s', [FCliente.Email]));
     Result.Add('');
@@ -244,7 +304,17 @@ procedure TForm1.SendEmail;
     Result.Add(Format('        Páis: %s', [FCliente.Endereco.Pais]));
   end;
 
+var
+  lSend: TfrmSendEmail;
 begin
+  lSend := TfrmSendEmail.Create(Self, FSettingsEmail);
+  try
+    lSend.Text    := ClienteText;
+    lSend.FileXML := FFileXML;
+    lSend.ShowModal;
+  finally
+    lSend.Free;
+  end;
 end;
 
 procedure TForm1.SettingsCEP(ASender: TObject);

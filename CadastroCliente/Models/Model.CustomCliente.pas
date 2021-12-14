@@ -1,9 +1,9 @@
-unit CustomCliente;
+unit Model.CustomCliente;
 
 interface
 
 uses
-  System.Classes, System.SysUtils, CustomBase, CustomEndereco;
+  System.Classes, System.SysUtils, Model.CustomBase, Model.CustomEndereco;
 
 type
   TrCustomCliente = class(TrCustomBase)

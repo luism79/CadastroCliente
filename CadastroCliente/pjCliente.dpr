@@ -3,14 +3,14 @@ program pjCliente;
 uses
   Vcl.Forms,
   MainCliente in 'MainCliente.pas' {Form1},
-  ConsultarCep in 'Services\ConsultarCep.pas',
-  CustomBase in 'Models\CustomBase.pas',
-  CustomCliente in 'Models\CustomCliente.pas',
-  CustomEndereco in 'Models\CustomEndereco.pas',
-  ExportXML in 'Services\ExportXML.pas',
+  Service.LocateCep in 'Services\Service.LocateCep.pas',
+  Model.CustomBase in 'Models\Model.CustomBase.pas',
+  Model.CustomCliente in 'Models\Model.CustomCliente.pas',
+  Model.CustomEndereco in 'Models\Model.CustomEndereco.pas',
+  Service.ExportXML in 'Services\Service.ExportXML.pas',
   Service.SendEMail in 'Services\Service.SendEMail.pas',
   Win.Settings in 'Window\Settings\Win.Settings.pas' {frmSettings},
-  Controller.EmailSettings in 'Controller\Controller.EmailSettings.pas',
+  Model.EmailSettings in 'Models\Model.EmailSettings.pas',
   Win.SendEmail in 'Window\Win.SendEmail.pas' {frmSendEmail};
 
 {$R *.res}

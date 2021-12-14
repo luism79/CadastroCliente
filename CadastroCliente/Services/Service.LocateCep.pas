@@ -1,10 +1,10 @@
-unit ConsultarCep;
+unit Service.LocateCep;
 
 interface
 
 uses
-  System.Classes, System.SysUtils, REST.Client, System.JSON, CustomBase,
-  CustomEndereco;
+  System.Classes, System.SysUtils, REST.Client, System.JSON, Model.CustomBase,
+  Model.CustomEndereco;
 
 type
   TrConsultarCEP = class(TrCustomBase)

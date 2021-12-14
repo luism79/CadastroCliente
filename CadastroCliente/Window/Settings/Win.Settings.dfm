@@ -28,8 +28,6 @@ object frmSettings: TfrmSettings
     ParentBackground = False
     ShowCaption = False
     TabOrder = 0
-    ExplicitWidth = 334
-    ExplicitHeight = 151
     object lblSMTP: TLabel
       Left = 27
       Top = 25
